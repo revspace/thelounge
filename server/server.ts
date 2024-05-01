@@ -859,7 +859,7 @@ function initializeClient(
 	}
 }
 
-function getClientConfiguration(): SharedConfiguration | LockedSharedConfiguration {
+function getClientConfiguration(data: AuthPerformData): SharedConfiguration | LockedSharedConfiguration {
 	const common = {
 		fileUpload: Config.values.fileUpload.enable,
 		ldapEnabled: Config.values.ldap.enable,
@@ -876,7 +876,10 @@ function getClientConfiguration(): SharedConfiguration | LockedSharedConfigurati
 	};
 
 	const defaultsOverride = {
-		nick: Config.getDefaultNick(), // expand the number part
+		// nick: Config.getDefaultNick(), // expand the number part
+		nick: data.user,
+		username: data.user,
+		leaveMessage: `/quit unlocked by ${data.user}`,
 
 		// TODO: this doesn't seem right, if the client needs this as a buffer
 		// the client ought to add it on its own
@@ -957,7 +960,7 @@ function performAuthentication(this: Socket, data: AuthPerformData) {
 		// Configuration does not change during runtime of TL,
 		// and the client listens to this event only once
 		if (data && (!("hasConfig" in data) || !data.hasConfig)) {
-			socket.emit("configuration", getClientConfiguration());
+			socket.emit("configuration", getClientConfiguration(data));
 
 			socket.emit(
 				"push:issubscribed",
