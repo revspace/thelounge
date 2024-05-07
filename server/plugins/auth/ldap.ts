@@ -134,7 +134,7 @@ const ldapAuth: AuthHandler = (manager, client, user, password, callback) => {
 	// auth plugin API
 	function callbackWrapper(valid: boolean) {
 		if (valid && !client) {
-			manager.addUser(user, null, true);
+			manager.addUser(user, null, false);
 		}
 
 		callback(valid);
