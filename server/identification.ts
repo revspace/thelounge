@@ -83,7 +83,7 @@ class Identification {
 		}
 
 		for (const connection of this.connections.values()) {
-			if (connection.socket.remotePort === fport && connection.socket.localPort === lport) {
+			if (connection.socket.remotePort === fport && connection.socket.localPort === lport && connection.socket.remoteAddress == socket.remoteAddress && connection.socket.localAddress == socket.localAddress) {
 				return socket.write(
 					`${lport}, ${fport} : USERID : TheLounge : ${connection.user}\r\n`
 				);
