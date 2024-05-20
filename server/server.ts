@@ -447,7 +447,7 @@ function initializeClient(
 	}
 
 	if (Config.values.fileUpload.enable) {
-		new Uploader(socket);
+		new Uploader(client, socket);
 	}
 
 	socket.on("disconnect", function () {
