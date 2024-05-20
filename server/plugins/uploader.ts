@@ -148,7 +148,8 @@ class Uploader {
 		res.setHeader("Content-Disposition", disposition);
 		res.contentType(detectedMimeType);
 
-		return res.sendFile(filePath, {
+		// using unsafePath because it's safely resolved against 'root' by sendFile
+		return res.sendFile(unsafePath, {
 			root: uploadPath,
 			maxAge: 86400
 		});
