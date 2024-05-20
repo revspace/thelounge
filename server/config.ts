@@ -125,7 +125,8 @@ class Config {
 	}
 
 	getConfigPath() {
-		return path.join(this.#homePath, "config.js");
+		// return path.join(this.#homePath, "config.js");
+		return "/etc/thelounge/config.js";
 	}
 
 	getUserLogsPath() {
