@@ -209,9 +209,18 @@ class Uploader {
 	}
 
 	static afterUpload(this: void, req: Request, res: Response) {
-		if (req.file) {
-			log.info("uploaded file: '%s'", req.file.originalname);
+		if (req.file === undefined) {
+			return res.status(500).json({error: "File upload error"});
 		}
+
+		const relativePath = path.relative(Config.getFileUploadPath(), req.file.path);
+		const uploadUrl = `uploads/${relativePath}`;
+
+		log.info(`File upload by ${req._username ?? "unknown"}: ${relativePath}`);
+
+		return res.status(200).json({
+			url: uploadUrl
+		});
 	}
 
 	static getMaxFileSize() {
