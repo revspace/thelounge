@@ -107,9 +107,9 @@ class SharpDiskStorage implements multer.StorageEngine {
 
 	_removeFile(req: Request, file: Express.Multer.File, callback: (error: Error | null) => void): void {
 		const p = file.path;
-		delete file.destination;
-		delete file.filename;
-		delete file.path;
+		// delete file.destination;
+		// delete file.filename;
+		// delete file.path;
 
 		fs.unlink(p, callback);
 	}
