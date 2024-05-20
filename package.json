@@ -78,7 +78,7 @@
     "read-chunk": "3.2.0",
     "resolve-path": "1.4.0",
     "semver": "7.5.2",
-    "sharp": "0.33.4",
+    "sharp": "0.33.1",
     "socket.io": "4.6.1",
     "tlds": "1.228.0",
     "ua-parser-js": "1.0.33",
