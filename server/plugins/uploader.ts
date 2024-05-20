@@ -11,7 +11,6 @@ import log from "../log";
 import contentDisposition from "content-disposition";
 import type {Socket} from "socket.io";
 import {Request, Response} from "express";
-import convert from "heic-jpg-exif";
 
 // Map of allowed mime types to their respecive default filenames
 // that will be rendered in browser without forcing them to be downloaded
@@ -248,13 +247,6 @@ class Uploader {
 				},
 				filename: string | number | boolean
 			) => {
-				let convertToJpeg = false;
-
-				if (typeof filename === "string" && filename.endsWith(".heic")) {
-					convertToJpeg = true;
-					filename.replace(/\.heic$/, ".jpg");
-				}
-
 				uploadUrl = `${randomName}/${encodeURIComponent(filename)}`;
 
 				if (Config.values.fileUpload.baseUrl) {
@@ -274,27 +266,8 @@ class Uploader {
 					return abortWithError(Error("File size limit reached"));
 				});
 
-				// Attempt to write the stream to file, converting to jpeg first if needed (HEIC)
-
-				// Little race-condition where busboyInstance.on("finish") handler might fire as soon
-				// as buffers are concatinated, while conversion is still happening.
-				// might be fine, as it'll take a bit before the url actually needs to be available anyways,
-				// but might have worse error-handling..
-				if (convertToJpeg && streamWriter) {
-					const bufs: Buffer[] = [];
-					streamWriter.on("data", (d: Buffer) => bufs.push(d));
-					streamWriter.on("error", abortWithError);
-					streamWriter.on("end", () => {
-						const buf = Buffer.concat(bufs);
-						convert(buf).then((c) => {
-							fileStream.pipe(c);
-						}).catch((e) => {
-							abortWithError(e);
-						});
-					});
-				} else {
-					fileStream.pipe(streamWriter);
-				}
+				// Attempt to write the stream to file
+				fileStream.pipe(streamWriter);
 			}
 		);
 
