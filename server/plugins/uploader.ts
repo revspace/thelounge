@@ -1,6 +1,6 @@
 import Config from "../config";
 import path from "path";
-import fs from "fs/promises";
+import fs from "fs";
 import fileType from "file-type";
 import readChunk from "read-chunk";
 import isUtf8 from "is-utf8";
@@ -12,6 +12,7 @@ import Client from "../client";
 import resolvePath from "resolve-path";
 import multer from "multer";
 import { nanoid } from "nanoid";
+import sharp from "sharp";
 
 declare module 'express' {
 	interface Request {
@@ -41,6 +42,78 @@ const inlineContentDispositionTypes = {
 	"video/ogg": "video.ogv",
 	"video/webm": "video.webm",
 };
+
+// Multer storage backend adapted from DiskStorage https://github.com/expressjs/multer/blob/master/storage/disk.js
+// To be able to transparently convert files if needed
+
+type FilenameFunc = (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => void;
+type DestinationFunc = (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => void;
+
+class SharpDiskStorage implements multer.StorageEngine {
+	getFilename: FilenameFunc;
+	getDestination: DestinationFunc;
+
+	constructor(opts: {filename: FilenameFunc, destination: DestinationFunc}) {
+		this.getFilename = opts.filename;
+		this.getDestination = opts.destination;
+	}
+
+	_handleFile(req: Request, file: Express.Multer.File, callback: (error?: any, info?: Partial<Express.Multer.File> | undefined) => void): void {
+		const that = this;
+
+		that.getDestination(req, file, function (err, destination) {
+			if (err) {
+				return callback(err);
+			}
+
+			that.getFilename(req, file, function (err2, filename) {
+				if (err2) {
+					return callback(err2);
+				}
+
+				let convertToJpeg = false;
+
+				if (path.parse(filename).ext.toLowerCase() === ".heic") {
+					convertToJpeg = true;
+					filename.replace(/\.heic$/, ".jpg");
+				}
+
+				const finalPath = path.join(destination, filename);
+				const outStream = fs.createWriteStream(finalPath);
+				outStream.on("error", callback);
+
+				if (convertToJpeg) {
+					const converterStream = sharp()
+						.rotate()
+						.toFormat("jpeg");
+
+					converterStream.on("error", callback);
+					file.stream.pipe(converterStream).pipe(outStream);
+				} else {
+					file.stream.pipe(outStream);
+				}
+
+				outStream.on("finish", () => {
+					callback(null, {
+						destination,
+						filename,
+						path: finalPath,
+						size: outStream.bytesWritten
+					})
+				});
+			})
+		})
+	}
+
+	_removeFile(req: Request, file: Express.Multer.File, callback: (error: Error | null) => void): void {
+		const p = file.path;
+		delete file.destination;
+		delete file.filename;
+		delete file.path;
+
+		fs.unlink(p, callback);
+	}
+}
 
 interface UploadToken {
 	name: string,
@@ -184,9 +257,9 @@ class Uploader {
 				files: 1,
 				fileSize: Uploader.getMaxFileSize()
 			},
-			storage: multer.diskStorage({
+			storage: new SharpDiskStorage({
 				destination(_req, file, cb) {
-					fs.mkdir(userDir, { recursive: true }).then(() => {
+					fs.promises.mkdir(userDir, { recursive: true }).then(() => {
 						cb(null, userDir);
 					}).catch((err) => {
 						log.error("File upload error: %s", err.message);
@@ -204,6 +277,26 @@ class Uploader {
 					cb(null, id);
 				}
 			})
+			// storage: multer.diskStorage({
+			// 	destination(_req, file, cb) {
+			// 		fs.promises.mkdir(userDir, { recursive: true }).then(() => {
+			// 			cb(null, userDir);
+			// 		}).catch((err) => {
+			// 			log.error("File upload error: %s", err.message);
+			// 			cb(err, "");
+			// 		});
+			// 	},
+			// 	filename(_req, file, cb) {
+			// 		let id = nanoid(16);
+			// 		const ext = path.parse(file.originalname).ext;
+
+			// 		if (ext) {
+			// 			id += ext;
+			// 		}
+
+			// 		cb(null, id);
+			// 	}
+			// })
 		});
 
 		uploadMiddleware.single("file")(req, res, next);
