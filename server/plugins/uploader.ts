@@ -71,18 +71,11 @@ class SharpDiskStorage implements multer.StorageEngine {
 					return callback(err2);
 				}
 
-				let convertToJpeg = false;
-
-				if (path.parse(filename).ext.toLowerCase() === ".heic") {
-					convertToJpeg = true;
-					filename.replace(/\.heic$/, ".jpg");
-				}
-
 				const finalPath = path.join(destination, filename);
 				const outStream = fs.createWriteStream(finalPath);
 				outStream.on("error", callback);
 
-				if (convertToJpeg) {
+				if (file.mimetype === "image/heif") {
 					const converterStream = sharp()
 						.rotate()
 						.toFormat("jpeg");
@@ -107,9 +100,6 @@ class SharpDiskStorage implements multer.StorageEngine {
 
 	_removeFile(req: Request, file: Express.Multer.File, callback: (error: Error | null) => void): void {
 		const p = file.path;
-		// delete file.destination;
-		// delete file.filename;
-		// delete file.path;
 
 		fs.unlink(p, callback);
 	}
@@ -268,7 +258,11 @@ class Uploader {
 				},
 				filename(_req, file, cb) {
 					let id = nanoid(16);
-					const ext = path.parse(file.originalname).ext;
+					let ext = path.parse(file.originalname).ext;
+
+					if (file.mimetype === "image/heif") {
+						ext += ".jpg";
+					}
 
 					if (ext) {
 						id += ext;
@@ -277,26 +271,6 @@ class Uploader {
 					cb(null, id);
 				}
 			})
-			// storage: multer.diskStorage({
-			// 	destination(_req, file, cb) {
-			// 		fs.promises.mkdir(userDir, { recursive: true }).then(() => {
-			// 			cb(null, userDir);
-			// 		}).catch((err) => {
-			// 			log.error("File upload error: %s", err.message);
-			// 			cb(err, "");
-			// 		});
-			// 	},
-			// 	filename(_req, file, cb) {
-			// 		let id = nanoid(16);
-			// 		const ext = path.parse(file.originalname).ext;
-
-			// 		if (ext) {
-			// 			id += ext;
-			// 		}
-
-			// 		cb(null, id);
-			// 	}
-			// })
 		});
 
 		uploadMiddleware.single("file")(req, res, next);
