@@ -187,10 +187,10 @@
 					>
 						<option
 							v-for="network in store.state.serverConfiguration?.networks"
-							:key="network.name"
-							:value="network.name"
+							:key="network"
+							:value="network"
 						>
-							{{ network.name }}
+							{{ network }}
 						</option>
 					</select>
 				</div>

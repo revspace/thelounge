@@ -80,11 +80,22 @@ type StoragePolicy = {
 	deletionPolicy: "statusOnly" | "everything";
 };
 
-type NetworkTemplate = {
+type TemplateNetwork = {
+	name: string,
 	host: string,
 	port: number,
 	tls: boolean,
-	rejectUnauthorized: boolean // if TLS certificates are validated 
+	rejectUnauthorized: boolean,
+	caCert?: Buffer
+};
+
+type NetworkInConfig = {
+	name: string,
+	host: string,
+	port: number,
+	tls: boolean,
+	rejectUnauthorized?: boolean,
+	caCert?: string
 };
 
 export type ConfigType = {
@@ -107,7 +118,7 @@ export type ConfigType = {
 	leaveMessage: string;
 	defaults: Defaults;
 	lockNetwork: boolean;
-	networks: {[name: string]: NetworkTemplate};
+	networks: {[name: string]: NetworkInConfig};
 	messageStorage: string[];
 	storagePolicy: StoragePolicy;
 	useHexIp: boolean;
@@ -124,9 +135,7 @@ class Config {
 		path.join(__dirname, "..", "defaults", "config.js")
 	)) as ConfigType;
 	#homePath = "";
-	networks = Object.fromEntries(Object.entries(this.values.networks).map(([name, network]) => {
-		return [name, {...network, name}];
-	}));
+	networks: {[name: string]: TemplateNetwork} = this.parseNetworks();
 
 	getHomePath() {
 		return this.#homePath;
@@ -179,8 +188,30 @@ class Config {
 		);
 	}
 
+	getNetworks() {
+		return this.networks;
+	}
+
+	getNetworkNames() {
+		return Object.keys(this.networks);
+	}
+
+	parseNetworks() {
+		return Object.fromEntries(Object.entries(this.values.networks).map(([name, network]) => {
+			return [name, <TemplateNetwork>{
+				name,
+				host: network.host,
+				port: network.port,
+				tls: network.tls !== undefined ? network.tls : true,
+				rejectUnauthorized: network.rejectUnauthorized !== undefined ? network.rejectUnauthorized : true,
+				caCert: network.caCert ? fs.readFileSync(network.caCert) : undefined
+			}];
+		}));
+	}
+
 	merge(newConfig: ConfigType) {
 		this._merge_config_objects(this.values, newConfig);
+		this.networks = this.parseNetworks();
 	}
 
 	_merge_config_objects(oldConfig: ConfigType, newConfig: ConfigType) {

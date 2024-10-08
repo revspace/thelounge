@@ -21,6 +21,7 @@ type NetworkIrcOptions = {
 	username: string;
 	gecos: string;
 	tls: boolean;
+	ca_certificate?: Buffer;
 	rejectUnauthorized: boolean;
 	webirc: WebIRC | null;
 	client_certificate: ClientCertificateType | null;
@@ -94,6 +95,7 @@ class Network {
 	host!: string;
 	port!: number;
 	tls!: boolean;
+	caCert!: Buffer;
 	userDisconnected!: boolean;
 	rejectUnauthorized!: boolean;
 	password!: string;
@@ -247,7 +249,7 @@ class Network {
 		if (Config.values.lockNetwork) {
 			// This check is needed to prevent invalid user configurations
 
-			const allowedNetwork = Object.values(Config.networks).find((network) => {
+			const allowedNetwork = Object.values(Config.getNetworks()).find((network) => {
 				return (this.name === network.name || this.host === network.host);
 			});
 
@@ -261,6 +263,10 @@ class Network {
 			this.port = allowedNetwork.port;
 			this.tls = allowedNetwork.tls;
 			this.rejectUnauthorized = allowedNetwork.rejectUnauthorized;
+
+			if (allowedNetwork.caCert !== undefined) {
+				this.caCert = allowedNetwork.caCert;
+			}
 		}
 
 		if (this.host.length === 0) {
@@ -319,6 +325,7 @@ class Network {
 		this.irc.options.gecos = this.realname;
 		this.irc.options.tls = this.tls;
 		this.irc.options.rejectUnauthorized = this.rejectUnauthorized;
+		this.irc.options.ca_certificate = this.caCert;
 		this.irc.options.webirc = this.createWebIrc(client);
 		this.irc.options.client_certificate = null;
 

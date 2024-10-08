@@ -873,7 +873,7 @@ function getClientConfiguration(data: AuthPerformData): SharedConfiguration | Lo
 		useHexIp: Config.values.useHexIp,
 		prefetch: Config.values.prefetch,
 		fileUploadMaxFileSize: Uploader ? Uploader.getMaxFileSize() : undefined, // TODO can't be undefined?
-		networks: Config.networks
+		networks: Config.getNetworkNames()
 	};
 
 	const defaultsOverride = {
@@ -891,9 +891,17 @@ function getClientConfiguration(data: AuthPerformData): SharedConfiguration | Lo
 
 	if (!Config.values.lockNetwork) {
 		const defaultNetwork = Config.values.networks[Config.values.defaults.name];
+
+		if (defaultNetwork.rejectUnauthorized === undefined) {
+			defaultNetwork.rejectUnauthorized = true;
+		}
+
 		const defaults: ConfigNetDefaults = {
 			..._.clone(Config.values.defaults),
-			..._.clone(defaultNetwork),
+			host: defaultNetwork.host,
+			port: defaultNetwork.port,
+			tls: defaultNetwork.tls,
+			rejectUnauthorized: defaultNetwork.rejectUnauthorized,
 			...defaultsOverride,
 		};
 		const result: SharedConfiguration = {

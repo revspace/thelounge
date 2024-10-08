@@ -24,7 +24,7 @@ type SharedConfigurationBase = {
 	themes: ConfigTheme[];
 	defaultTheme: string;
 	fileUploadMaxFileSize?: number;
-	networks: {[name: string]: NetworkTemplate};
+	networks: string[];
 };
 
 export type ConfigNetDefaults = {

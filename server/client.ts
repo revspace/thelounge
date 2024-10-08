@@ -313,6 +313,7 @@ class Client {
 			host: String(args.host || ""),
 			port: parseInt(String(args.port), 10),
 			tls: !!args.tls,
+			caCert: args.caCert,
 			userDisconnected: !!args.userDisconnected,
 			rejectUnauthorized: !!args.rejectUnauthorized,
 			password: String(args.password || ""),
