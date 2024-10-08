@@ -889,8 +889,10 @@ function getClientConfiguration(data: AuthPerformData): SharedConfiguration | Lo
 	};
 
 	if (!Config.values.lockNetwork) {
+		const defaultNetwork = Config.values.networks[Config.values.defaults.name];
 		const defaults: ConfigNetDefaults = {
 			..._.clone(Config.values.defaults),
+			..._.clone(defaultNetwork),
 			...defaultsOverride,
 		};
 		const result: SharedConfiguration = {
