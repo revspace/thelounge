@@ -263,7 +263,7 @@ module.exports = {
 	// }
 	// ```
 	defaults: {
-		network: "Libera.Chat",
+		name: "Libera.Chat",
 		password: "",
 		rejectUnauthorized: true,
 		nick: "thelounge%%",
@@ -295,7 +295,7 @@ module.exports = {
 			tls: true,
 			rejectUnauthorized: true
 		}
-	}
+	},
 
 	// ## User management
 
