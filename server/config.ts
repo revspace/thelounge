@@ -135,6 +135,7 @@ class Config {
 		path.join(__dirname, "..", "defaults", "config.js")
 	)) as ConfigType;
 	#homePath = "";
+	configPath: string | undefined;
 	networks: {[name: string]: TemplateNetwork} = this.parseNetworks();
 
 	getHomePath() {
@@ -142,8 +143,7 @@ class Config {
 	}
 
 	getConfigPath() {
-		return path.join(this.#homePath, "config.js");
-		// return "/etc/thelounge/config.js";
+		return this.configPath ?? path.join(this.#homePath, "config.js");
 	}
 
 	getUserLogsPath() {
