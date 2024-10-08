@@ -3,6 +3,14 @@ export type ConfigTheme = {
 	name: string;
 	themeColor: string | null;
 };
+
+type NetworkTemplate = {
+	host: string,
+	port: number,
+	tls: boolean,
+	rejectUnauthorized: boolean // if TLS certificates are validated 
+};
+
 type SharedConfigurationBase = {
 	public: boolean;
 	useHexIp: boolean;
@@ -16,6 +24,7 @@ type SharedConfigurationBase = {
 	themes: ConfigTheme[];
 	defaultTheme: string;
 	fileUploadMaxFileSize?: number;
+	networks: string[];
 };
 
 export type ConfigNetDefaults = {
@@ -34,6 +43,7 @@ export type ConfigNetDefaults = {
 	saslAccount: string;
 	saslPassword: string;
 };
+
 export type LockedConfigNetDefaults = Pick<
 	ConfigNetDefaults,
 	"name" | "nick" | "username" | "password" | "realname" | "join"

@@ -32,11 +32,7 @@ type FileUpload = {
 export type Defaults = Pick<
 	Network,
 	| "name"
-	| "host"
-	| "port"
 	| "password"
-	| "tls"
-	| "rejectUnauthorized"
 	| "nick"
 	| "username"
 	| "realname"
@@ -46,6 +42,7 @@ export type Defaults = Pick<
 	| "saslPassword"
 > & {
 	join: string;
+	network: string;
 };
 
 type Identd = {
@@ -83,6 +80,24 @@ type StoragePolicy = {
 	deletionPolicy: "statusOnly" | "everything";
 };
 
+type TemplateNetwork = {
+	name: string,
+	host: string,
+	port: number,
+	tls: boolean,
+	rejectUnauthorized: boolean,
+	caCert?: Buffer
+};
+
+type NetworkInConfig = {
+	name: string,
+	host: string,
+	port: number,
+	tls: boolean,
+	rejectUnauthorized?: boolean,
+	caCert?: string
+};
+
 export type ConfigType = {
 	public: boolean;
 	host: string | undefined;
@@ -103,6 +118,7 @@ export type ConfigType = {
 	leaveMessage: string;
 	defaults: Defaults;
 	lockNetwork: boolean;
+	networks: {[name: string]: NetworkInConfig};
 	messageStorage: string[];
 	storagePolicy: StoragePolicy;
 	useHexIp: boolean;
@@ -119,14 +135,15 @@ class Config {
 		path.join(__dirname, "..", "defaults", "config.js")
 	)) as ConfigType;
 	#homePath = "";
+	configPath: string | undefined;
+	networks: {[name: string]: TemplateNetwork} = this.parseNetworks();
 
 	getHomePath() {
 		return this.#homePath;
 	}
 
 	getConfigPath() {
-		// return path.join(this.#homePath, "config.js");
-		return "/etc/thelounge/config.js";
+		return this.configPath ?? path.join(this.#homePath, "config.js");
 	}
 
 	getUserLogsPath() {
@@ -171,8 +188,30 @@ class Config {
 		);
 	}
 
+	getNetworks() {
+		return this.networks;
+	}
+
+	getNetworkNames() {
+		return Object.keys(this.networks);
+	}
+
+	parseNetworks() {
+		return Object.fromEntries(Object.entries(this.values.networks).map(([name, network]) => {
+			return [name, <TemplateNetwork>{
+				name,
+				host: network.host,
+				port: network.port,
+				tls: network.tls !== undefined ? network.tls : true,
+				rejectUnauthorized: network.rejectUnauthorized !== undefined ? network.rejectUnauthorized : true,
+				caCert: network.caCert ? fs.readFileSync(network.caCert) : undefined
+			}];
+		}));
+	}
+
 	merge(newConfig: ConfigType) {
 		this._merge_config_objects(this.values, newConfig);
+		this.networks = this.parseNetworks();
 	}
 
 	_merge_config_objects(oldConfig: ConfigType, newConfig: ConfigType) {

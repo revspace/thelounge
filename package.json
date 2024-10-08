@@ -1,14 +1,14 @@
 {
   "name": "thelounge",
   "description": "The self-hosted Web IRC client",
-  "version": "4.4.3",
+  "version": "4.4.3+revspace6",
   "preferGlobal": true,
   "bin": {
     "thelounge": "index.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/thelounge/thelounge.git"
+    "url": "https://github.com/revspace/thelounge.git"
   },
   "homepage": "https://thelounge.chat/",
   "scripts": {
@@ -64,7 +64,7 @@
     "file-type": "16.5.4",
     "filenamify": "4.3.0",
     "got": "11.8.5",
-    "irc-framework": "4.13.1",
+    "irc-framework": "https://github.com/revspace/nodejs-irc-framework",
     "is-utf8": "0.2.1",
     "ldapjs": "2.3.1",
     "linkify-it": "3.0.3",

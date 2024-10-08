@@ -178,31 +178,21 @@
 			<template v-else-if="config.lockNetwork && !store.state.serverConfiguration?.public">
 				<h2>Network settings</h2>
 				<div class="connect-row">
-					<label for="connect:name">Name</label>
-					<input
-						id="connect:name"
-						v-model.trim="defaults.name"
+					<label for="connect:name">Network</label>
+					<select 
+						id="connect:name"	
+						v-model="defaults.name"
 						class="input"
 						name="name"
-						maxlength="100"
-					/>
-				</div>
-				<div class="connect-row">
-					<label for="connect:password">Password</label>
-					<RevealPassword
-						v-slot:default="slotProps"
-						class="input-wrap password-container"
 					>
-						<input
-							id="connect:password"
-							v-model="defaults.password"
-							class="input"
-							:type="slotProps.isVisible ? 'text' : 'password'"
-							placeholder="Server password (optional)"
-							name="password"
-							maxlength="300"
-						/>
-					</RevealPassword>
+						<option
+							v-for="network in store.state.serverConfiguration?.networks"
+							:key="network"
+							:value="network"
+						>
+							{{ network }}
+						</option>
+					</select>
 				</div>
 			</template>
 

@@ -264,10 +264,7 @@ module.exports = {
 	// ```
 	defaults: {
 		name: "Libera.Chat",
-		host: "irc.libera.chat",
-		port: 6697,
 		password: "",
-		tls: true,
 		rejectUnauthorized: true,
 		nick: "thelounge%%",
 		username: "thelounge",
@@ -284,6 +281,21 @@ module.exports = {
 	//
 	// This value is set to `false` by default.
 	lockNetwork: false,
+
+	networks: {
+		"Libera.Chat": {
+			host: "irc.libera.chat",
+			port: 6697,
+			tls: true,
+			rejectUnauthorized: true
+		},
+		"OFTC": {
+			host: "irc.oftc.net",
+			port: 6697,
+			tls: true,
+			rejectUnauthorized: true
+		}
+	},
 
 	// ## User management
 
