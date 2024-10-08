@@ -873,6 +873,7 @@ function getClientConfiguration(data: AuthPerformData): SharedConfiguration | Lo
 		useHexIp: Config.values.useHexIp,
 		prefetch: Config.values.prefetch,
 		fileUploadMaxFileSize: Uploader ? Uploader.getMaxFileSize() : undefined, // TODO can't be undefined?
+		networks: Config.networks
 	};
 
 	const defaultsOverride = {
