@@ -32,11 +32,7 @@ type FileUpload = {
 export type Defaults = Pick<
 	Network,
 	| "name"
-	| "host"
-	| "port"
 	| "password"
-	| "tls"
-	| "rejectUnauthorized"
 	| "nick"
 	| "username"
 	| "realname"
@@ -46,6 +42,7 @@ export type Defaults = Pick<
 	| "saslPassword"
 > & {
 	join: string;
+	network: string;
 };
 
 type Identd = {
@@ -83,6 +80,13 @@ type StoragePolicy = {
 	deletionPolicy: "statusOnly" | "everything";
 };
 
+type NetworkTemplate = {
+	host: string,
+	port: number,
+	tls: boolean,
+	rejectUnauthorized: boolean // if TLS certificates are validated 
+};
+
 export type ConfigType = {
 	public: boolean;
 	host: string | undefined;
@@ -103,6 +107,7 @@ export type ConfigType = {
 	leaveMessage: string;
 	defaults: Defaults;
 	lockNetwork: boolean;
+	networks: {[name: string]: NetworkTemplate};
 	messageStorage: string[];
 	storagePolicy: StoragePolicy;
 	useHexIp: boolean;
@@ -119,6 +124,9 @@ class Config {
 		path.join(__dirname, "..", "defaults", "config.js")
 	)) as ConfigType;
 	#homePath = "";
+	networks = Object.fromEntries(Object.entries(this.values.networks).map(([name, network]) => {
+		return [name, {...network, name}];
+	}));
 
 	getHomePath() {
 		return this.#homePath;
