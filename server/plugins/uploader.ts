@@ -75,7 +75,7 @@ class SharpDiskStorage implements multer.StorageEngine {
 				const outStream = fs.createWriteStream(finalPath);
 				outStream.on("error", callback);
 
-				if (file.mimetype === "image/heif") {
+				if (file.mimetype === "image/heif" || file.mimetype === "image/heic") {
 					const converterStream = sharp()
 						.rotate()
 						.toFormat("jpeg");
