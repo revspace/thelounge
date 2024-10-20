@@ -10,13 +10,8 @@ const program = new Command("start");
 program
 	.description("Start the server")
 	.option("--dev", "Development mode with hot module reloading")
-	.option("--configPath <file>", "config file path")
 	.on("--help", Utils.extraHelp)
 	.action(function (options) {
-		if (options.configPath !== undefined) {
-			Config.configPath = options.configPath;
-		}
-
 		initalizeConfig();
 
 		const newLocal = "../server";
